@@ -36,6 +36,8 @@ class kmem_cache_node(hs.heap_structure):
         self.init(node_id)
 
     def init(self, node_id):
+        
+        # TODO, fix VALUE type not correct
 
         # our own abstraction fields
         self.node_id = node_id # node index in the kmem_cache
@@ -43,11 +45,11 @@ class kmem_cache_node(hs.heap_structure):
         
         self.partial_slabs = [] # list of kmem_cache_cpu objects for that kmem_cache
         # browse the list of gdb.Value (representing the kmem_cache_cpu->node[node_id].partial linked list of struct page*)
-        page_type = gdb.lookup_type("struct page")
-        partial_slabs_values = list(self.sb.for_each_entry(page_type, self.value["partial"], "lru"))
+        page_type = gdb.lookup_type("struct slab")
+        partial_slabs_values = list(self.sb.for_each_entry(page_type, self.value["partial"], "slab_list"))
         slab_count = len(partial_slabs_values)
         for slab_index, slab_value in enumerate(partial_slabs_values):
-            partial_slab = p.page(self.sb, self.kmem_cache, None, self, sb.SlabType.NODE_SLAB, index=slab_index+1, count=slab_count, value=slab_value)
+            partial_slab = p.slab(self.sb, self.kmem_cache, None, self, sb.SlabType.NODE_SLAB, index=slab_index+1, count=slab_count, value=slab_value)
             self.partial_slabs.append(partial_slab)
 
     def print(self, verbose=0, use_cache=False, indent=0, cmd=None):

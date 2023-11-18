@@ -223,7 +223,6 @@ class sb:
         pos = head["next"].dereference()
         while pos.address != head.address:
             entry = gdb.Value(pos.address.cast(void_p) - offset)
-            # print(entry)
             # print(entry.cast(type.pointer()).dereference())
             # print("Found list entry: 0x%x" % entry)
             # Cast the gdb.Value address to the right type and return that as a dictionary
@@ -399,7 +398,6 @@ class sb:
         kmem_cache_cpu = gdb.lookup_type(
             "struct kmem_cache_cpu"
         ).pointer()  # type represents a kmem_cache_cpu*
-
         offset = slab_cache["cpu_slab"]
         result = []
         for cpu_idx in range(self.cpu_num):
@@ -470,7 +468,7 @@ class sb:
         (implying it's not associated with this specific CPU at the moment?),
         and the name matches whatever cache we are interested in
         """
-        page_type = gdb.lookup_type("struct page").pointer()
+        page_type = gdb.lookup_type("struct slab").pointer()
         for addr in slabs_list:
             slab = gdb.Value(addr).cast(page_type)
             slab_cache = slab["slab_cache"]
@@ -516,8 +514,8 @@ class sb:
         cpu_cache_list = self.get_all_slab_cache_cpus(slab_cache)
 
         for cpu_id, cpu_cache in enumerate(cpu_cache_list):
-            if cpu_cache["page"]:
-                slab = cpu_cache["page"].dereference()
+            if cpu_cache["slab"]:
+                slab = cpu_cache["slab"].dereference()
                 pages.append(slab)
 
             if cpu_cache["partial"]:
@@ -530,7 +528,7 @@ class sb:
         for node_id in range(self.node_num):
             node_cache = slab_cache["node"][node_id]
             page = gdb.lookup_type("struct page")
-            partials = list(self.for_each_entry(page, node_cache["partial"], "lru"))
+            partials = list(self.for_each_entry(page, node_cache["partial"], "slab_list"))
             if partials:
                 for slab in partials:
                     pages.append(slab)
@@ -605,6 +603,7 @@ class sb:
         @param chunk_addr: a chunk address we are looking for
         @param name: slab cache name if known (optional)
         @return the slab address (struct page*) holding that chunk"""
+        
 
         if not name:
             slab_caches = sb.iter_slab_caches()

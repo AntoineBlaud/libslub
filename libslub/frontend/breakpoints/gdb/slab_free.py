@@ -27,7 +27,7 @@ class DiscardSlab(gdb.Breakpoint):
     def stop(self):
         slab_cache = gdb.selected_frame().read_var("s")
         name = slab_cache["name"].string()
-        page = gdb.selected_frame().read_var("page")
+        page = gdb.selected_frame().read_var("slab")
         addr = int(page) & sb.sb.UNSIGNED_LONG
         self.sb.notify_slab_free(name, addr)
         return False # continue execution

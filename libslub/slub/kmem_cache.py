@@ -56,6 +56,7 @@ class kmem_cache(hs.heap_structure):
         for cpu_id, cache_cpu_value in enumerate(self.sb.get_all_slab_cache_cpus(self.value)):
             kmem_cache_cpu = kcc.kmem_cache_cpu(self.sb, cpu_id, self, cache_cpu_value)
             self.kmem_cache_cpu_list.append(kmem_cache_cpu)
+            
 
 
         self.kmem_cache_node_list = [] # list of kmem_cache_node objects for that kmem_cache
@@ -73,7 +74,7 @@ class kmem_cache(hs.heap_structure):
         full_slabs_values = list(self.sb.get_full_slabs(self.name))
         slab_count = len(full_slabs_values)
         for slab_index, full_slab_value in enumerate(full_slabs_values):
-            full_slab = p.page(self.sb, self, None, None, sb.SlabType.FULL_SLAB, index=slab_index+1, count=slab_count, value=full_slab_value)
+            full_slab = p.slab(self.sb, self, None, None, sb.SlabType.FULL_SLAB, index=slab_index+1, count=slab_count, value=full_slab_value)
             self.full_slabs.append(full_slab)
 
     def print(self, verbose=0, use_cache=False, cmd=None):

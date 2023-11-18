@@ -14,7 +14,7 @@ importlib.reload(obj)
 import libslub.frontend.commands.gdb.sbobject as sbobject
 importlib.reload(sbobject)
 
-class page(hs.heap_structure):
+class slab(hs.heap_structure):
     """python representation of a struct page
     
     struct page {: https://elixir.bootlin.com/linux/v5.15/source/include/linux/mm_types.h#L70
@@ -29,7 +29,7 @@ class page(hs.heap_structure):
         :param address: address for a page where to read the structure's content from the debugger (not supported yet)
         """
 
-        super(page, self).__init__(sb)
+        super(slab, self).__init__(sb)
 
         # page structure's fields can be looked up directly from the gdb.Value
         self.value = value # gdb.Value representing the page
@@ -106,9 +106,9 @@ class page(hs.heap_structure):
             if name:
                 txt += "{:8} = ".format(name)
             if self.is_main_slab:
-                title = "struct page @ 0x%x {" % (self.address)
+                title = "struct slab @ 0x%x {" % (self.address)
             else:
-                title = "struct page @ 0x%x (%d/%d) {" % (self.address, self.index, self.count)
+                title = "struct slab @ 0x%x (%d/%d) {" % (self.address, self.index, self.count)
             txt += pu.color_title(title)
             txt += "\n{:s}  {:8} = ".format(" "*indent, "objects")
             txt += pu.color_value("{:#d}".format(self.objects))

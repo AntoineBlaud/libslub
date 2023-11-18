@@ -66,6 +66,7 @@ Equivalent to "cat /proc/slabinfo" in userland.""",
         log.debug("sblist.invoke()")
         
         page_type = gdb.lookup_type("struct page")
+        slab_type = gdb.lookup_type("struct slab")
 
         print("name                    objs inuse slabs size obj_size objs_per_slab pages_per_slab")
         
@@ -90,8 +91,8 @@ Equivalent to "cat /proc/slabinfo" in userland.""",
             
             # kmem_cache_cpu->page == The slab from which we are allocating
             # struct page {: https://elixir.bootlin.com/linux/v5.15/source/include/linux/mm_types.h#L70
-            if cpu_cache["page"]: 
-                cnt_objs = cnt_inuse = int(cpu_cache["page"]["objects"]) & self.sb.UNSIGNED_INT
+            if cpu_cache["slab"]: 
+                cnt_objs = cnt_inuse = int(cpu_cache["slab"]["objects"]) & self.sb.UNSIGNED_INT
                 # kmem_cache_cpu->freelist == Pointer to next available object
                 if cpu_cache["freelist"]:
                     cnt_inuse -= len(
@@ -112,7 +113,7 @@ Equivalent to "cat /proc/slabinfo" in userland.""",
             # kmem_cache->node == The slab lists for all objects
             # struct kmem_cache_node {: https://elixir.bootlin.com/linux/v5.15/source/mm/slab.h#L533
             node_cache = slab_cache["node"].dereference().dereference()
-            for slab in self.sb.for_each_entry(page_type, node_cache["partial"], "lru"):
+            for slab in self.sb.for_each_entry(slab_type, node_cache["partial"], "slab_list"):
                 cnt_objs += int(slab["objects"]) & self.sb.UNSIGNED_INT
                 cnt_inuse += int(slab["inuse"]) & self.sb.UNSIGNED_INT
                 cnt_slabs += 1

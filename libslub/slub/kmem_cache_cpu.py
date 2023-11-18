@@ -54,10 +54,10 @@ class kmem_cache_cpu(hs.heap_structure):
 
         # the slab from which we are allocating for that cpu core
         self.main_slab = None
-        if self.value["page"]:
-            self.main_slab = p.page(self.sb, self.kmem_cache, self, None, sb.SlabType.MAIN_SLAB, value=self.value["page"].dereference(), is_main_slab=True)
+        if self.value["slab"]:
+            self.main_slab = p.slab(self.sb, self.kmem_cache, self, None, sb.SlabType.MAIN_SLAB, value=self.value["slab"].dereference(), is_main_slab=True)
 
-        # update the main freelist's objects "page"
+        # update the main freelist's objects "slab"
         for o in self.freelist:
             o.page = self.main_slab
 
@@ -73,7 +73,7 @@ class kmem_cache_cpu(hs.heap_structure):
         slab_ptr = self.value["partial"]
         while slab_ptr:
             slab = slab_ptr.dereference()
-            partial_slab = p.page(self.sb, self.kmem_cache, self, None, sb.SlabType.PARTIAL_SLAB, index=slab_index, count=slab_count, value=slab)
+            partial_slab = p.slab(self.sb, self.kmem_cache, self, None, sb.SlabType.PARTIAL_SLAB, index=slab_index, count=slab_count, value=slab)
             self.partial_slabs.append(partial_slab)
             slab_ptr = slab["next"]
             slab_index += 1
@@ -154,7 +154,7 @@ class kmem_cache_cpu(hs.heap_structure):
                 )
 
         if cmd.output_filtered is False or cmd.args.main_slab is True:
-            self.main_slab.print(name="page", indent=indent+2, cmd=cmd)
+            self.main_slab.print(name="slab", indent=indent+2, cmd=cmd)
         if cmd.output_filtered is False or cmd.args.partial_slab is True:
             for partial_slab in self.partial_slabs:
                 partial_slab.print(name="partial", indent=indent+2, cmd=cmd)
